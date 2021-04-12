@@ -1,0 +1,118 @@
+meirh18
+edenhorka
+
+
+=============================
+=      File description     =
+=============================
+
+Project to create a program that can read s-Java (simplified Java) files and report if there are errors in the
+code syntax.
+
+The following packages and classes are included:
+
+The commands package contains classes for different types of commands: Variable, Method and Return. A command
+is defined as a line of code that does not initiate a new variable or method object. A variable command
+assigns a value to a variable. A method command calls a method. A return command ends the code of that scope.
+It is required at the end of each s-java method.
+
+The exceptions package: contains two exception classes. IO Exceptions are thrown if the s-java file cannot be
+found or is unreadable. The Parse exception is thrown if a problem is found in the syntax of the code. An
+error code of 1 is printed and a detailed message of the specific problem that was found.
+
+The scopes package contains three classes: A general Scope class that is extended by the Method and by the
+IfWhile classes. These classes represent scopes of the code. They contain lists and other data members that
+store information about the scope, such as which scopes it is contained within, what variables it can access,
+as well as other specific attributes of the scope.
+
+The variables class contains a Variable interface which is implemented by an abstract GeneralVariable class.
+Specific variable objects (types of variables) extend the general variable class. Each variable object has a
+method that uses regex to check the validity of values assigned to it. Also in this package is a Variable
+Factory class that uses static methods to create variable objects with their correct attributes.
+
+Also included is a Parser class that parses the s-java file lne by line and uses regex patterns to determine
+if the line is valid and what type of object should be created or action should be taken. The Regex class
+contains numerous regex patterns and methods in this class are used to match these patterns to the code.
+
+The main method is contained in the Sjavac class that runs the program and catches exceptions if they are
+thrown.
+
+
+
+=============================
+=          Design           =
+=============================
+
+1. Modularity, the Factory design pattern, Single Choice priniciple:
+
+By designing the structure of the program using separate classes for different types of scopes and variables,
+modularity and the single-choice principle were observed. A new scope or variable could easily be added and
+only a small change to the relevant factory methods would be necessary to add new functionality. We used the
+factory design principle for both determining the action or object to create in the Parser class as well as
+what type of specific variable to create in the VariableFactory class.
+
+
+
+2. Exceptions:
+
+We used exceptions to flag problems in the code instead of using boolean methods. This allowed us to check for
+ code errors at various points in the code by simply checking the regex or some other attribute and throwing
+ an exception with a specific message.
+
+
+=============================
+=  Implementation details   =
+=============================
+
+Due to the extreme complexity of this project and the numerous edge cases, we had to add many conditionals and
+ checks. The check of the code is divided into two stages. The first set of checks occurs as each line is
+ parsed. When the line is read, regex patterns are used to determine that the line is formulated correctly for
+  either the creation of a new variable or method, the closure of a scope,  or for a command. In the
+  constructor of new objects, a first level of checks is done to determine that the values assigned are valid
+  and other aspects of the object are valid. However, since the code has not been completely read, some checks
+   cannot yet be determined and are marked for a later check. Specifically, since a global variable and
+   methods can be  declared later in the code, the commands that call or refer to methods or variables cannot
+   be fully checked if they are valid. Only once all the code has been read can we check that indeed a call to
+    foo() is a valid method call.
+
+We chose to keep all the non-trivial regex patterns within the Regex class instaed of with their specific
+classes. This was easier since often the pattern was used by more than one class, and once central location
+was more convenient and simpler.
+
+=============================
+=    Answers to questions   =
+=============================
+
+6.1 - We used a single Exception class to handle the code errors. We considred using inheritance and making
+separate error classes for each type, however this resulted in much repeated code that was difficult to
+maintain. Instead the PArse exception class handles all code errors. For all these errors the same code is out
+ putted. We siply send to the exception class the specific message that details the issue with the code.
+
+6.2 - Because we designed our code with modularity, new types of variables such as float could easily be
+supported. We would just add anothe Float class that extends the GeneralVariable class. The new class would
+have a regex pattern to check and would otherwise be used in the same way as any other variable. One line
+would need to be added to the factory method to support the creation of the new float object.
+
+Similarly, if we wanted to support classes, we could add a new scope class that extends Scope. This class
+would
+ have similar attributes to other scopes, with some unique methods and attributes to check specifically for
+ the validity of the code for a class scope. One line would be added to the p[arser's factory method to
+ support the creation of the new type of scope, and a new regex pattern added to the Regex class.
+
+If we wanted to support other java commands like System.ot.println, we could add a new command class that
+extends Command. This class would have specific checks for the syntax required. No other code would need to
+be modified, since the parser will simply call the specific check command method for this object.
+
+
+6.3 - For this exercise we used many regex patters. Below are two significant ones and their brief
+explanation:
+
+1: To check if a variable name is valid we used the regex pattern: "(?:[a-zA-Z][\\w]*|[_][\\w]+)"
+This pattern checks that the first character of the name is an alphabetical character or if the name starts
+with an underscore that there is at least one alphanumeric character after it. This pattern is used to build
+other patters that we used for checking variable creation and assignements.
+
+2: Another pattern of interest that we used often is : "(?:-?\\d+(?:\\.\\d+)?)"
+This pattern checks that a string is formed as a double, meaning it is either a digit or several of them, or
+it is a digit(s) followed by a period and then more digit(s). This is used to check variable types idf theya
+re required to be a double. The double can also be proceeded by either 0 or 1 negative (-) symbol.
